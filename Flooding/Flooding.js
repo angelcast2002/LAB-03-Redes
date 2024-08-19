@@ -5,15 +5,21 @@ let visitedMessages = new Set();
 
 const getContacts = async () => {
   // Aquí deberías implementar la lógica para obtener los contactos de un nodo
-  return ["mor21146@alumchat.lol", "contact2@alumchat.lol", "contact3@alumchat.lol"];
+  return [
+    "mor21146@alumchat.lol",
+    "contact2@alumchat.lol",
+    "contact3@alumchat.lol",
+  ];
 };
 
-const floodMessage = async (body, destination) => {
+const floodMessage = async (message, from=null) => {
   try {
     const contacts = await getContacts();
 
     for (const contact of contacts) {
-      await sendMessage(contact, body, destination);
+      if (contact === from) continue;
+      // console.log("Enviando mensaje a ", contact, from);
+      await sendMessage(contact, message);
     }
     console.log("Flooding completed");
   } catch (err) {
@@ -21,18 +27,15 @@ const floodMessage = async (body, destination) => {
   }
 };
 
-const sendMessage = async (to, body, destination) => {
+const sendMessage = async (to, message) => {
   if (!xmppClient) return;
-  const message = {
-    type: "message",
-    from: xmppClient.jid.toString(),
-    to: destination,
-    hops: 0,
-    headers: [],
-    payload: body
-  };
-
-  const xmlMessage = xml("message", { to, type: "chat" }, xml("body", {}, JSON.stringify(message)));
+  // console.log("Sending message:", message);
+  const xmlMessage = xml(
+    "message",
+    { to, type: "chat" },
+    xml("body", {}, JSON.stringify(message))
+  );
+  // console.log("Sending message:", xmlMessage);
   await xmppClient.send(xmlMessage);
 };
 
@@ -49,7 +52,12 @@ const connect = async (Username, password) => {
     xmppClient.on("online", async (address) => {
       console.log("Connected as", address.toString());
       await xmppClient.send(
-        xml("presence", {}, xml("status", {}, `Hola soy ${Username}`), xml("show", {}, "chat"))
+        xml(
+          "presence",
+          {},
+          xml("status", {}, `Hola soy ${Username}`),
+          xml("show", {}, "chat")
+        )
       );
     });
 
@@ -57,13 +65,21 @@ const connect = async (Username, password) => {
       if (stanza.is("message")) {
         const body = stanza.getChildText("body");
         if (body) {
-          console.log("Received message:", body);
-          const jsonMessage = JSON.parse(body);
-          if (jsonMessage.to === Username) {
-            console.log("Received message:", jsonMessage);
-          } else {
-            jsonMessage.hops++;
-            await floodMessage(jsonMessage.payload, jsonMessage.to);
+          try {
+            const jsonMessage = JSON.parse(body);
+            const from = stanza.attrs.from.split("/")[0];
+            // console.log("Received message:", jsonMessage.to);
+            // console.log(jsonMessage);
+            if (jsonMessage.to.split("@")[0] === Username) {
+              console.log("Mensaje recibido de ", jsonMessage.from);
+              console.log("Mensaje: ", jsonMessage.payload);
+              console.log("Hops: ", jsonMessage.hops);
+            } else {
+              jsonMessage.hops++;
+              await floodMessage(jsonMessage, from);
+            }
+          } catch (err) {
+            console.log("Mensaje no sigue el formato correcto");
           }
         }
       }
@@ -93,7 +109,15 @@ const main = async () => {
   const password = "18sep2002"; // Cambia por tu contraseña
 
   await connect(Username, password);
-  await floodMessage("Este mensaje es para Azurdia", "azu21243");
+  const message = {
+    type: "message",
+    from: Username + "@alumchat.lol",
+    to: "mor21146@alumchat.lol",
+    hops: 0,
+    headers: [],
+    payload: "Este mensaje es para Mora",
+  };
+  await floodMessage(message);
   // await logOut();
 };
 
