@@ -46,7 +46,10 @@ const connect = async (Username, password) => {
                 const neighbors = getLocalContacts();
                 const response = [];
                 for (let i = 0; i < neighbors.length; i++) {
-                  response.push(await getNeighbors(neighbors[i][0]));
+                  getNeighbors(neighbors[i][0], jsonBody.from).then((res) => {
+                    response.push(res);
+                  });
+                  // response.push(await getNeighbors(neighbors[i][0], jsonBody.from));
                 }
 
                 console.log("Response:", response);
@@ -81,9 +84,7 @@ const logOut = async () => {
  * Pedir los contactos
  */
 const getLocalContacts = () => {
-  return [
-    ["azu21242@alumchat.lol", 1],
-  ];
+  return [["mor21146@alumchat.lol", 1]];
 };
 
 /**
@@ -116,6 +117,7 @@ const sendNeighbors = async (neighbors, to) => {
     { type: "chat", to: to },
     xml("body", {}, JSON.stringify(body))
   );
+  console.log("Sending neighbors to", message);
   await xmppClient.send(message);
 };
 
