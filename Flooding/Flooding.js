@@ -12,7 +12,7 @@ const getContacts = async () => {
   ];
 };
 
-const floodMessage = async (message, from=null) => {
+const floodMessage = async (message, from = null) => {
   try {
     const contacts = await getContacts();
 
@@ -62,26 +62,30 @@ const connect = async (Username, password) => {
     });
 
     xmppClient.on("stanza", async (stanza) => {
-      if (stanza.is("message")) {
-        const body = stanza.getChildText("body");
-        if (body) {
-          try {
-            const jsonMessage = JSON.parse(body);
-            const from = stanza.attrs.from.split("/")[0];
-            // console.log("Received message:", jsonMessage.to);
-            // console.log(jsonMessage);
-            if (jsonMessage.to.split("@")[0] === Username) {
-              console.log("Mensaje recibido de ", jsonMessage.from);
-              console.log("Mensaje: ", jsonMessage.payload);
-              console.log("Hops: ", jsonMessage.hops);
-            } else {
-              jsonMessage.hops++;
-              await floodMessage(jsonMessage, from);
+      try {
+        if (stanza.is("message")) {
+          const body = stanza.getChildText("body");
+          if (body) {
+            try {
+              const jsonMessage = JSON.parse(body);
+              const from = stanza.attrs.from.split("/")[0];
+              // console.log("Received message:", jsonMessage.to);
+              // console.log(jsonMessage);
+              if (jsonMessage.to.split("@")[0] === Username) {
+                console.log("Mensaje recibido de ", jsonMessage.from);
+                console.log("Mensaje: ", jsonMessage.payload);
+                console.log("Hops: ", jsonMessage.hops);
+              } else {
+                jsonMessage.hops++;
+                await floodMessage(jsonMessage, from);
+              }
+            } catch (err) {
+              console.log("Mensaje no sigue el formato correcto");
             }
-          } catch (err) {
-            console.log("Mensaje no sigue el formato correcto");
           }
         }
+      } catch (error) {
+        console.error("Failed to log out:", error);
       }
     });
 

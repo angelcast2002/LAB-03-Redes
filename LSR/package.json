@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@xmpp/client": "^0.13.1"
+    "@xmpp/client": "^0.13.1",
+    "@xmpp/debug": "^0.13.0"
   }
 }
