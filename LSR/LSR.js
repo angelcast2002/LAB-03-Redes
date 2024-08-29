@@ -29,8 +29,13 @@ const connect = async (Username, password) => {
     xmppClient.on("stanza", async (stanza) => {
       try {
         //console.log("Stanza received:", stanza);
+        // Ignorar stanzas que contienen el elemento <event> con el namespace http://jabber.org/protocol/pubsub#event
+        if (
+          stanza.getChild("event", "http://jabber.org/protocol/pubsub#event")
+        ) {
+          return;
+        }
         if (stanza.is("message")) {
-          console.log("Stanza message received", stanza.toString());
           const type = stanza.attrs.type;
           if (type === "chat") {
             const body = stanza.getChildText("body");
@@ -41,10 +46,11 @@ const connect = async (Username, password) => {
                 const neighbors = getLocalContacts();
                 const response = [];
                 for (let i = 0; i < neighbors.length; i++) {
-                  response.push(neighbors[i]);
+                  response.push(getNeighbors(neighbors[i][0]));
                 }
+
                 console.log("Response:", response);
-				await sendNeighbors(response, jsonBody.from);
+                await sendNeighbors(response, jsonBody.from);
               }
             }
           }
@@ -98,21 +104,21 @@ const getNeighbors = async (contact, username) => {
   );
 
   const response = await xmppClient.send(request_neighbors_stanza);
-  console.log("Response:", response.toString());
+//   console.log("Response:", response.toString());
   return response;
 };
 
 const sendNeighbors = async (neighbors, to) => {
-	body = {
-		type: "info",
-		payload: neighbors
-	}
-	const message = xml(
-		"message",
-		{type: "chat", to: to},
-		xml("body", {}, JSON.stringify(body))
-	)
-	await xmppClient.send(message)
+  body = {
+    type: "info",
+    payload: neighbors,
+  };
+  const message = xml(
+    "message",
+    { type: "chat", to: to },
+    xml("body", {}, JSON.stringify(body))
+  );
+  await xmppClient.send(message);
 };
 
 const send_neighbors_stanza = async (contact) => {
