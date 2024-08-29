@@ -46,9 +46,8 @@ const connect = async (Username, password) => {
             if (body) {
               const jsonBody = JSON.parse(body);
               if (jsonBody.type === "echo") {
-                console.log("Echo stanza received from", jsonBody.from);
                 const neighbors = getLocalContacts();
-                const response = [];
+                
                 for (let i = 0; i < neighbors.length; i++) {
                   if (
                     neighbors[i][0] === jsonBody.from ||
@@ -58,20 +57,16 @@ const connect = async (Username, password) => {
                     continue;
                   }
                   fetchedNodes.add(neighbors[i][0]);
-                  getNeighbors(neighbors[i][0], localUsername).then((res) => {
-                    response.push(res);
-                  });
-                  response.push(neighbors[i]);
+                  getNeighbors(neighbors[i][0], localUsername);
+                 
                 }
 
-                console.log("Response:", response);
-                await sendNeighbors(response, jsonBody.from);
+                console.log("allNodes:", allNodes);
+                await sendNeighbors(allNodes, jsonBody.from);
               } else if (jsonBody.type === "info") {
-                console.log("Entro -->");
                 const from =
                   stanza.attrs.from?.split("/")[0] || stanza.attrs.from;
                 allNodes[from] = jsonBody.payload;
-                
               }
             }
           }
@@ -106,6 +101,7 @@ const getLocalContacts = () => {
   return [["mor21146@alumchat.lol", 1]];
 };
 
+
 /**
  * pedir la información de los contactos de nuestros contactos y sus pesos.
  * Con una stanza personalizada, de tipo echo, que contenga el nombre de usuario y el peso.
@@ -122,6 +118,7 @@ const getNeighbors = async (contact, username) => {
   );
 
   await xmppClient.send(request_neighbors_stanza);
+  return;
 };
 
 const sendNeighbors = async (neighbors, to) => {
