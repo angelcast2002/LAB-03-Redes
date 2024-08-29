@@ -5,6 +5,8 @@ const { client, xml } = require("@xmpp/client");
 let xmppClient;
 let localUsername;
 let fetchedNodes = new Set();
+// {nodo: [[vecino, peso], [vecino, peso]]}
+let allNodes = {};
 
 const connect = async (Username, password) => {
   try {
@@ -48,7 +50,11 @@ const connect = async (Username, password) => {
                 const neighbors = getLocalContacts();
                 const response = [];
                 for (let i = 0; i < neighbors.length; i++) {
-                  if (neighbors[i][0] === jsonBody.from || neighbors[i][0] === localUsername || fetchedNodes.has(neighbors[i][0])) {
+                  if (
+                    neighbors[i][0] === jsonBody.from ||
+                    neighbors[i][0] === localUsername ||
+                    fetchedNodes.has(neighbors[i][0])
+                  ) {
                     continue;
                   }
                   fetchedNodes.add(neighbors[i][0]);
@@ -60,6 +66,12 @@ const connect = async (Username, password) => {
 
                 console.log("Response:", response);
                 await sendNeighbors(response, jsonBody.from);
+              } else if (jsonBody.type === "info") {
+                console.log("Entro -->");
+                const from =
+                  stanza.attrs.from?.split("/")[0] || stanza.attrs.from;
+                allNodes[from] = jsonBody.payload;
+                
               }
             }
           }
@@ -90,6 +102,7 @@ const logOut = async () => {
  * Pedir los contactos
  */
 const getLocalContacts = () => {
+  //["mor21146@alumchat.lol", 1], ["cas21700@alumchat.lol", 1]
   return [["mor21146@alumchat.lol", 1]];
 };
 
@@ -121,7 +134,7 @@ const sendNeighbors = async (neighbors, to) => {
     { type: "chat", to: to },
     xml("body", {}, JSON.stringify(body))
   );
-  console.log("Sending neighbors to", message);
+  console.log("Sending neighbors to", message.toString());
   await xmppClient.send(message);
 };
 
@@ -145,6 +158,7 @@ const main = async () => {
   for (let i = 0; i < contacts.length; i++) {
     await getNeighbors(contacts[i][0], `${Username}@alumchat.lol`);
   }
+  console.log("All nodes:\n", allNodes);
 };
 
 main().catch((err) => console.error("Error en la ejecución:", err));
