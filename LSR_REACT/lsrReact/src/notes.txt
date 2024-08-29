@@ -1,0 +1,7 @@
+{
+    user1 : [[user, weight], [user, weight]...]
+    user2 : [[user, weight], [user, weight]...]
+    ...
+}
+
+La idea es formar una tabla con todos los usuarios (nodos) y sus respectivos vecinos (nodos) con sus respectivos pesos (aristas).

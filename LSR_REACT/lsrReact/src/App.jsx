@@ -1,37 +1,27 @@
-// App.jsx
-import { useEffect, useState, useRef } from 'react';
-import { connect, getLocalContacts } from './helpers/xmppHelper';
+import './App.css';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import { useEffect, useContext } from 'react';
+import Login from './pages/Login';
+import Home from './pages/Home';
+;
+import AuthContext from './auxiliaryFunctions/AuthContext';
 
 function App() {
-  
-  const username = "azu21242";
-  const password = "azu21242";
+    const navigate = useNavigate();
+    const { user, isAuthenticated } = useContext(AuthContext);
 
-  const [localContacts, setLocalContacts] = useState([]);
-  const clientRef = useRef(null); // useRef para mantener la instancia del cliente
+    useEffect(() => {
+        if (user) {
+            navigate('/home');
+        }
+    }, [user, navigate]);
 
-  // Conectar al servidor XMPP solo una vez al montar el componente
-  useEffect(() => {
-    const initializeClient = async () => {
-      if (!clientRef.current) {
-        clientRef.current = await connect(username, password); // Guardar la instancia del cliente en clientRef
-      }
-    };
-    initializeClient();
-  }, [username, password]);
-
-  // Obtener los contactos locales una vez que el cliente esté conectado
-  useEffect(() => {
-    setLocalContacts(getLocalContacts());
-    console.log('setted local contacts:\n',localContacts);
-  }, []);
-
-  return (
-    <div>
-      {/* Renderiza lo que necesites aquí */}
-    </div>
-  );
+    return (
+        <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/home" element={isAuthenticated() ? <Home /> : <Login />} />
+        </Routes>
+    );
 }
 
 export default App;
-
