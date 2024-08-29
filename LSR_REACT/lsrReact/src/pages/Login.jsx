@@ -17,6 +17,9 @@ function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        console.log("iniciando sesion")
+        console.log(email)
+
         try {
             await login(email, password);
             navigate('/home');

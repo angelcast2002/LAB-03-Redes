@@ -1,5 +1,16 @@
 import {client as xmppClient, xml} from '@xmpp/client';
 
+
+const generateRandomString = (length) => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+};
+
 /**
  * Connect to the XMPP server
  * @param jid
@@ -10,6 +21,7 @@ export const connectToXMPP = async (jid, password) => {
     const client = xmppClient({
         service: 'ws://alumchat.lol:7070/ws/', // HTTP links should be avoided in production
         domain: 'alumchat.lol',
+        resource: generateRandomString(8),
         username: jid,
         password: password,
     });
@@ -34,8 +46,6 @@ export const connectToXMPP = async (jid, password) => {
         throw error;
     }
 };
-
-
 
 
 /**
@@ -75,3 +85,24 @@ export const logoutmng = async (client) => {
         throw error;
     }
 }
+
+/**
+ * Request the information of the contacts of our contacts and their weights.
+ * With a custom stanza of type echo, containing the username and weight.
+ * @param contact
+ * @param username
+ * @returns {Promise<void>}
+ */
+export const getNeighbors = async (client, contact, username) => {
+    const body = {
+        type: "echo",
+        from: username,
+    };
+    const request_neighbors_stanza = xml(
+        "message",
+        { type: "chat", to: contact },
+        xml("body", {}, JSON.stringify(body))
+    );
+
+    await client.send(request_neighbors_stanza);
+};

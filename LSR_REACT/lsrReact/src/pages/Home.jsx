@@ -1,18 +1,49 @@
-// eslint-disable-next-line no-unused-vars
 import AuthContext from '../auxiliaryFunctions/AuthContext.jsx';
-import {useContext, useState} from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 function Home() {
-    const {user, logout} = useContext(AuthContext);
+    const {user, logout } = useContext(AuthContext);
+    const [logguedUser, setLogguedUser] = useState('');
+    const [contacts, setContacts] = useState([]);
 
-    const [localUser, setLocalUser] = useState(user);
+    const contactsData = {
+        ale1: ['ale2@alumchat.lol', 2],
+        ale2: ['ale3@alumchat.lol', 1],
+        ale3: ['ale4@alumchat.lol', 3],
+        ale4: ['ale5@alumchat.lol', 2],
+        ale5: []
+    };
 
-    
+    /**
+    useEffect(() => {
+        const jid = localStorage.getItem('jid');
+        if (jid) {
+            setLogguedUser(`${jid}@alumchat.lol`);
+        }
+
+        if (jid && contactsData[jid]) {
+            setContacts(contactsData[jid]);
+        }
+
+        console.log('contactos de ' + jid + ': ', contacts)
+
+    }, []);
+     */
+
+    useEffect(() => {
+        if(user){
+            setLogguedUser(`${user.email}@alumchat.lol`);
+            if (contactsData[user.email]) {
+                setContacts(contactsData[user.email]);
+            }
+        }
+    }, []);
+    console.log('logguedUser: ', logguedUser);
+    console.log('contacts: ', contacts);
 
 
 
-
-    const handleSendNRequest = async (e) => {
+    const handleSendNRequest = async () => {
         console.log("Sending neighbor request");
     }
 
@@ -34,9 +65,7 @@ function Home() {
                 </div>
             </div>
         </div>
-
     );
-    
 }
 
 export default Home;
