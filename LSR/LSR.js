@@ -3,6 +3,7 @@
 const { client, xml } = require("@xmpp/client");
 
 let xmppClient;
+let localUsername;
 
 const connect = async (Username, password) => {
   try {
@@ -28,7 +29,6 @@ const connect = async (Username, password) => {
 
     xmppClient.on("stanza", async (stanza) => {
       try {
-        //console.log("Stanza received:", stanza);
         // Ignorar stanzas que contienen el elemento <event> con el namespace http://jabber.org/protocol/pubsub#event
         if (
           stanza.getChild("event", "http://jabber.org/protocol/pubsub#event")
@@ -36,6 +36,7 @@ const connect = async (Username, password) => {
           return;
         }
         if (stanza.is("message")) {
+          console.log("Message stanza received:", stanza.toString());
           const type = stanza.attrs.type;
           if (type === "chat") {
             const body = stanza.getChildText("body");
@@ -46,7 +47,7 @@ const connect = async (Username, password) => {
                 const neighbors = getLocalContacts();
                 const response = [];
                 for (let i = 0; i < neighbors.length; i++) {
-                  getNeighbors(neighbors[i][0], jsonBody.from).then((res) => {
+                  getNeighbors(neighbors[i][0], localUsername).then((res) => {
                     response.push(res);
                   });
                   response.push(neighbors[i]);
@@ -103,9 +104,7 @@ const getNeighbors = async (contact, username) => {
     xml("body", {}, JSON.stringify(body))
   );
 
-  const response = await xmppClient.send(request_neighbors_stanza);
-  console.log("Response:", response);
-  return response;
+  await xmppClient.send(request_neighbors_stanza);
 };
 
 const sendNeighbors = async (neighbors, to) => {
@@ -134,6 +133,7 @@ const send_neighbors_stanza = async (contact) => {
 const main = async () => {
   const Username = "cas21700";
   const password = "18sep2002";
+  localUsername = `${Username}@alumchat.lol`;
 
   await connect(Username, password);
   const contacts = getLocalContacts();
