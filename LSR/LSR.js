@@ -49,6 +49,7 @@ const connect = async (Username, password) => {
                   getNeighbors(neighbors[i][0], jsonBody.from).then((res) => {
                     response.push(res);
                   });
+                  response.push(neighbors[i]);
                   // response.push(await getNeighbors(neighbors[i][0], jsonBody.from));
                 }
 
