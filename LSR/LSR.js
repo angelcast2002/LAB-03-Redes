@@ -4,6 +4,7 @@ const { client, xml } = require("@xmpp/client");
 
 let xmppClient;
 let localUsername;
+let fetchedNodes = new Set();
 
 const connect = async (Username, password) => {
   try {
@@ -47,9 +48,10 @@ const connect = async (Username, password) => {
                 const neighbors = getLocalContacts();
                 const response = [];
                 for (let i = 0; i < neighbors.length; i++) {
-                  if (neighbors[i][0] === jsonBody.from) {
+                  if (neighbors[i][0] === jsonBody.from || neighbors[i][0] === localUsername || fetchedNodes.has(neighbors[i][0])) {
                     continue;
                   }
+                  fetchedNodes.add(neighbors[i][0]);
                   getNeighbors(neighbors[i][0], localUsername).then((res) => {
                     response.push(res);
                   });
