@@ -47,11 +47,13 @@ const connect = async (Username, password) => {
                 const neighbors = getLocalContacts();
                 const response = [];
                 for (let i = 0; i < neighbors.length; i++) {
+                  if (neighbors[i][0] === jsonBody.from) {
+                    continue;
+                  }
                   getNeighbors(neighbors[i][0], localUsername).then((res) => {
                     response.push(res);
                   });
                   response.push(neighbors[i]);
-                  // response.push(await getNeighbors(neighbors[i][0], jsonBody.from));
                 }
 
                 console.log("Response:", response);
