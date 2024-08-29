@@ -46,7 +46,7 @@ const connect = async (Username, password) => {
                 const neighbors = getLocalContacts();
                 const response = [];
                 for (let i = 0; i < neighbors.length; i++) {
-                  response.push(getNeighbors(neighbors[i][0]));
+                  response.push(await getNeighbors(neighbors[i][0]));
                 }
 
                 console.log("Response:", response);
@@ -83,8 +83,6 @@ const logOut = async () => {
 const getLocalContacts = () => {
   return [
     ["azu21242@alumchat.lol", 1],
-    ["contact2@alumchat.lol", 1],
-    ["contact3@alumchat.lol", 1],
   ];
 };
 
@@ -104,7 +102,7 @@ const getNeighbors = async (contact, username) => {
   );
 
   const response = await xmppClient.send(request_neighbors_stanza);
-//   console.log("Response:", response.toString());
+  console.log("Response:", response);
   return response;
 };
 
@@ -131,14 +129,13 @@ const send_neighbors_stanza = async (contact) => {
 };
 
 const main = async () => {
-  const Username = "mor21146";
-  const password = "1234";
+  const Username = "cas21700";
+  const password = "18sep2002";
 
   await connect(Username, password);
   const contacts = getLocalContacts();
 
   for (let i = 0; i < contacts.length; i++) {
-    console.log("Contacto: ", contacts[i][0]);
     await getNeighbors(contacts[i][0], `${Username}@alumchat.lol`);
   }
 };
