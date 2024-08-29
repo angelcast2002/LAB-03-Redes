@@ -23,6 +23,7 @@ function App() {
   // Obtener los contactos locales una vez que el cliente esté conectado
   useEffect(() => {
     setLocalContacts(getLocalContacts());
+    console.log('setted local contacts:\n',localContacts);
   }, []);
 
   return (

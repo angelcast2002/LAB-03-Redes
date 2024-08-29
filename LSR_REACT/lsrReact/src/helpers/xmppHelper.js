@@ -87,6 +87,7 @@ export const listenerForNeighborRequests = async (client, callback) => {
             const body = JSON.parse(stanza.getChildText('body'));
             if (body.type === 'echo') {
                 const localContacts = getLocalContacts();
+                // eslint-disable-next-line no-unused-vars
                 const promises = localContacts.map(([contact, weight]) => sendNeighborRequest(contact, body.from));
                 await Promise.all(promises);
                 const response = localContacts;
