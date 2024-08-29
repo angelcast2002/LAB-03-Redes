@@ -93,10 +93,10 @@ export const logoutmng = async (client) => {
  * @param username
  * @returns {Promise<void>}
  */
-export const getNeighbors = async (client, contact, username) => {
+export const request_neighbors = async (client, contact, username) => {
     const body = {
         type: "echo",
-        from: username,
+        from: username // tener cuidado con esto. 
     };
     const request_neighbors_stanza = xml(
         "message",
@@ -106,3 +106,10 @@ export const getNeighbors = async (client, contact, username) => {
 
     await client.send(request_neighbors_stanza);
 };
+
+
+
+
+/**
+ * 
+ */

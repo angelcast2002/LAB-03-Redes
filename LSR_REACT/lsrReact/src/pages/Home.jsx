@@ -14,22 +14,6 @@ function Home() {
         ale5: []
     };
 
-    /**
-    useEffect(() => {
-        const jid = localStorage.getItem('jid');
-        if (jid) {
-            setLogguedUser(`${jid}@alumchat.lol`);
-        }
-
-        if (jid && contactsData[jid]) {
-            setContacts(contactsData[jid]);
-        }
-
-        console.log('contactos de ' + jid + ': ', contacts)
-
-    }, []);
-     */
-
     useEffect(() => {
         if(user){
             setLogguedUser(`${user.email}@alumchat.lol`);
@@ -40,6 +24,12 @@ function Home() {
     }, []);
     console.log('logguedUser: ', logguedUser);
     console.log('contacts: ', contacts);
+
+    /**
+     * Send neighbor request
+     */
+
+    
 
 
 
