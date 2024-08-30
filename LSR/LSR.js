@@ -109,7 +109,7 @@ const logOut = async () => {
  */
 const getLocalContacts = () => {
   //["mor21146@alumchat.lol", 1], ["cas21700@alumchat.lol", 1]
-  return [["azu21242@alumchat.lol", 1]];
+  return [["mor21146@alumchat.lol", 1]];
 };
 
 /**
