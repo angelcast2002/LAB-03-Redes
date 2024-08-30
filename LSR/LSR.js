@@ -47,7 +47,11 @@ const connect = async (Username, password) => {
               const jsonBody = JSON.parse(body);
               if (jsonBody.type === "echo") {
                 const neighbors = getLocalContacts();
-                
+                const response = [];
+                for (let i = 0; i < neighbors.length; i++) {
+                  response.push(neighbors[i]);
+                }
+
                 for (let i = 0; i < neighbors.length; i++) {
                   if (
                     neighbors[i][0] === jsonBody.from ||
@@ -57,16 +61,23 @@ const connect = async (Username, password) => {
                     continue;
                   }
                   fetchedNodes.add(neighbors[i][0]);
-                  getNeighbors(neighbors[i][0], localUsername);
-                 
+                  const contacts = await getNeighbors(
+                    neighbors[i][0],
+                    localUsername
+                  );
+                  if (contacts) {
+                    response.push(contacts);
+                  }
                 }
 
-                console.log("allNodes:", allNodes);
-                await sendNeighbors(allNodes, jsonBody.from);
+                console.log("allNodes:", response);
+                await sendNeighbors(response, jsonBody.from);
               } else if (jsonBody.type === "info") {
                 const from =
                   stanza.attrs.from?.split("/")[0] || stanza.attrs.from;
+                console.log("payLoad:", jsonBody.payload);
                 allNodes[from] = jsonBody.payload;
+                console.log("allNodes:", allNodes);
               }
             }
           }
@@ -98,9 +109,8 @@ const logOut = async () => {
  */
 const getLocalContacts = () => {
   //["mor21146@alumchat.lol", 1], ["cas21700@alumchat.lol", 1]
-  return [["mor21146@alumchat.lol", 1]];
+  return [["azu21242@alumchat.lol", 1]];
 };
-
 
 /**
  * pedir la información de los contactos de nuestros contactos y sus pesos.
@@ -117,8 +127,8 @@ const getNeighbors = async (contact, username) => {
     xml("body", {}, JSON.stringify(body))
   );
 
-  await xmppClient.send(request_neighbors_stanza);
-  return;
+  const response = await xmppClient.send(request_neighbors_stanza);
+  return response;
 };
 
 const sendNeighbors = async (neighbors, to) => {
@@ -131,7 +141,7 @@ const sendNeighbors = async (neighbors, to) => {
     { type: "chat", to: to },
     xml("body", {}, JSON.stringify(body))
   );
-  console.log("Sending neighbors to", message.toString());
+
   await xmppClient.send(message);
 };
 
@@ -148,6 +158,13 @@ const main = async () => {
   const Username = "cas21700";
   const password = "18sep2002";
   localUsername = `${Username}@alumchat.lol`;
+  const localContacts = getLocalContacts();
+  console.log("Local contacts:", localContacts);
+  for (let i = 0; i < localContacts.length; i++) {
+    allNodes[localContacts[i][0]] = localContacts[i][1];
+  }
+
+  allNodes[localUsername] = getLocalContacts();
 
   await connect(Username, password);
   const contacts = getLocalContacts();
