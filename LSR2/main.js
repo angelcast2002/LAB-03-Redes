@@ -1,7 +1,7 @@
 const fs = require('fs');
 const readline = require('readline');
-const { connectToXmppServer, routingTableReady, getRoutingTable } = require('./client');  // Importar getRoutingTable
-const { xml } = require('@xmpp/client');  // Importación necesaria para enviar mensajes
+const { connectToXmppServer, routingTableReady, getRoutingTable } = require('./client');
+const { xml } = require('@xmpp/client');
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -22,19 +22,50 @@ const loadJSONFromFile = (filename) => {
     }
 };
 
-const sendMessageBasedOnRoutingTable = (xmppClient, destinationNode, message) => {
-    const routingTable = getRoutingTable();  // Obtener la tabla de enrutamiento actualizada
-    const nextHop = routingTable[destinationNode];
+/**
+ * Imprime la ruta completa que tomará un mensaje desde el nodo actual hasta el destino.
+ * @param {Object} routingTable - La tabla de enrutamiento calculada.
+ * @param {string} currentNode - El nodo de origen.
+ * @param {string} destinationNode - El nodo de destino.
+ */
+const printMessageRoute = (routingTable, currentNode, destinationNode) => {
+    let route = [currentNode];
+    let nextHop = routingTable[destinationNode]?.nextHop;
+
+    while (nextHop && nextHop !== destinationNode) {
+        route.push(nextHop);
+        nextHop = routingTable[nextHop]?.nextHop;
+    }
+
     if (nextHop) {
-        xmppClient.send(xml('message', { to: nextHop.nextHop },
+        route.push(destinationNode);
+    } else if (nextHop === null) {
+        route.push(destinationNode);
+    } else {
+        console.error(`Error: No se pudo determinar la ruta completa hacia ${destinationNode}.`);
+    }
+
+    console.log(`Ruta para enviar el mensaje desde ${currentNode} hasta ${destinationNode}: ${route.join(' -> ')}`);
+};
+
+
+const sendMessageBasedOnRoutingTable = (xmppClient, currentNode, destinationNode, message) => {
+    const routingTable = getRoutingTable();
+    const nextHop = routingTable[destinationNode]?.nextHop;
+
+    if (nextHop) {
+        printMessageRoute(routingTable, currentNode, destinationNode);
+
+        xmppClient.send(xml('message', { to: nextHop },
             xml('type', {}, 'chat'),
             xml('body', {}, message)
         ));
-        console.log(`Mensaje enviado a ${destinationNode} a través de ${nextHop.nextHop}`);
+        console.log(`Mensaje enviado a ${destinationNode} a través de ${nextHop}`);
     } else {
         console.error(`No se encontró ruta hacia ${destinationNode}`);
     }
 };
+
 
 const main = async () => {
     const nodeMapping = loadJSONFromFile('./names.txt');
@@ -72,14 +103,14 @@ const main = async () => {
     await routingTableReady;
 
     console.log('Verificando la tabla de enrutamiento...');
-    const routingTable = getRoutingTable();  // Obtener la tabla de enrutamiento actualizada
+    const routingTable = getRoutingTable();
     if (Object.keys(routingTable).length > 0) {
         console.log('Tabla de enrutamiento calculada:', routingTable);
 
         // Enviar un mensaje de prueba a un nodo de destino basado en la tabla de enrutamiento
         const testDestination = 'mor21146@alumchat.lol';  // Ahora utilizando la dirección XMPP completa
         const testMessage = 'Hola desde ' + currentNode;
-        sendMessageBasedOnRoutingTable(xmppClient, testDestination, testMessage);
+        sendMessageBasedOnRoutingTable(xmppClient, nodeMapping['config'][currentNode], testDestination, testMessage);
     } else {
         console.error("La tabla de enrutamiento no se ha calculado correctamente.");
     }
