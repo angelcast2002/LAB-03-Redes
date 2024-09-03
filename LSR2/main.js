@@ -1,11 +1,7 @@
-// Variables globales para manejar los tiempos de eco y RTT
-let echoMessageTimestamps = {};  // Marca de tiempo de cada mensaje echo enviado
-let roundTripTimesTable = {};  // Tiempos de ida y vuelta conocidos (RTT)
-let routingTable = {};  // Tabla de enrutamiento
-
 const fs = require('fs');
 const readline = require('readline');
-const { connectToXmppServer } = require('./client');
+const { connectToXmppServer, routingTableReady, routingTable } = require('./client');  // Importar routingTable
+const { xml } = require('@xmpp/client');  // Importación necesaria para enviar mensajes
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -39,7 +35,6 @@ const sendMessageBasedOnRoutingTable = (xmppClient, destinationNode, message) =>
     }
 };
 
-
 const main = async () => {
     const nodeMapping = loadJSONFromFile('./names.txt');
     const networkTopology = loadJSONFromFile('./topo.txt');
@@ -72,15 +67,25 @@ const main = async () => {
 
     console.log('Cliente XMPP conectado:', xmppClient.jid);
 
-    // Esperar a que se actualice la tabla de enrutamiento
-    setTimeout(() => {
+    // Esperar a que se actualice la tabla de enrutamiento usando Promesas
+    //await routingTableReady;
+
+    await routingTable;
+
+    console.log('Verificando la tabla de enrutamiento...');
+
+    console.log('Tabla de enrutamiento en main:', routingTable);
+
+    if (routingTable && Object.keys(routingTable).length > 0) {
         console.log('Tabla de enrutamiento calculada:', routingTable);
 
         // Enviar un mensaje de prueba a un nodo de destino basado en la tabla de enrutamiento
         const testDestination = 'mor21146@alumchat.lol';  // Ahora utilizando la dirección XMPP completa
         const testMessage = 'Hola desde ' + currentNode;
         sendMessageBasedOnRoutingTable(xmppClient, testDestination, testMessage);
-    }, 10000);  // Ajusta este tiempo según sea necesario para asegurarte de que la tabla de enrutamiento esté lista
+    } else {
+        console.error("La tabla de enrutamiento no se ha calculado correctamente.");
+    }
 
     // Cerrar la interfaz readline
     rl.close();

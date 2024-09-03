@@ -55,11 +55,21 @@ const calculateShortestPaths = async (networkGraph, sourceNode) => {
 
 function determineNextHop(previousNodes, destinationNode, sourceNode) {
     let nextHopNode = destinationNode;
+    
+    // Asegurarse de no retornar el propio nodo como el siguiente salto si no es el destino
     while (previousNodes[nextHopNode] && previousNodes[nextHopNode] !== sourceNode) {
         nextHopNode = previousNodes[nextHopNode];
     }
+
+    // Verificación adicional para evitar loops incorrectos
+    if (nextHopNode === destinationNode) {
+        console.log(`Error: El nodo ${destinationNode} no debería ser su propio nextHop.`);
+        return null;  // O manejarlo de otra manera adecuada
+    }
+
     console.log(`Determinando siguiente salto para ${destinationNode}: siguiente salto es ${nextHopNode}`);
     return nextHopNode;
 }
+
 
 module.exports = { calculateShortestPaths };

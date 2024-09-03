@@ -8,6 +8,12 @@ let routingTable = {};  // Tabla de enrutamiento
 let currentNodeId;  // Almacenar el ID del nodo actual
 let nodeMapping;
 let networkTopology;
+let routingTableReadyResolver;  // Resolver para la promesa de la tabla de enrutamiento
+
+// Promesa que se resuelve cuando la tabla de enrutamiento esté lista
+const routingTableReady = new Promise((resolve) => {
+    routingTableReadyResolver = resolve;
+});
 
 /**
  * Construye un grafo completo usando la topología conocida y los RTT medidos.
@@ -19,7 +25,7 @@ const buildFullGraph = (nodeMapping, networkTopology) => {
     const fullGraph = {};
 
     for (const nodeKey in nodeMapping['config']) {
-        const node = nodeMapping['config'][nodeKey]; // Usar la dirección XMPP completa como clave
+        const node = nodeMapping['config'][nodeKey];
 
         if (!fullGraph[node]) {
             fullGraph[node] = {};
@@ -33,7 +39,6 @@ const buildFullGraph = (nodeMapping, networkTopology) => {
 
     return fullGraph;
 };
-
 
 /**
  * Actualiza la tabla de enrutamiento usando el algoritmo de Dijkstra.
@@ -54,7 +59,10 @@ const updateRoutingTable = async () => {
 
     console.log('Grafo completo para Dijkstra:', fullGraph);
     routingTable = await calculateShortestPaths(fullGraph, currentNodeId);
-    console.log('Tabla de enrutamiento actualizada:', routingTable);
+    console.log('Tabla ->', routingTable);
+
+    // Resolver la promesa para indicar que la tabla de enrutamiento está lista
+    //routingTableReadyResolver();
 };
 
 /**
@@ -133,6 +141,7 @@ const handleIncomingMessage = (stanza) => {
                     xml('body', {}, 'Echo response from ' + currentNodeId)
                 )
             );
+            updateRoutingTable();
         } else if (messageType === 'echo-response') {
             // Calcular RTT basado en el tiempo de envío original
             const originalSendTime = echoMessageTimestamps[fromNodeJid];
@@ -149,10 +158,9 @@ const handleIncomingMessage = (stanza) => {
 
                 // Después de actualizar RTT, actualiza la tabla de enrutamiento
                 updateRoutingTable();
-                console.log('Tabla de enrutamiento actualizada:', routingTable);
             }
         }
     }
 };
 
-module.exports = { connectToXmppServer, handleIncomingMessage };
+module.exports = { connectToXmppServer, handleIncomingMessage, routingTableReady, routingTable };
