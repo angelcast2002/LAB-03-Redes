@@ -30,9 +30,11 @@ const calculateShortestPaths = async (networkGraph, sourceNode) => {
         // Actualizar distancias a los nodos vecinos
         for (const neighbor in networkGraph[closestUnvisitedNode]) {
             const newDistance = shortestDistances[closestUnvisitedNode] + networkGraph[closestUnvisitedNode][neighbor];
+            console.log(`Verificando nodo ${neighbor} desde ${closestUnvisitedNode}: distancia actual ${shortestDistances[neighbor]}, nueva distancia ${newDistance}`);
             if (newDistance < shortestDistances[neighbor]) {
                 shortestDistances[neighbor] = newDistance;
                 previousNodes[neighbor] = closestUnvisitedNode;
+                console.log(`Actualizando nodo ${neighbor}: distancia más corta ahora es ${newDistance} a través de ${closestUnvisitedNode}`);
             }
         }
     }
@@ -45,6 +47,7 @@ const calculateShortestPaths = async (networkGraph, sourceNode) => {
                 nextHop: determineNextHop(previousNodes, destination, sourceNode),
                 cost: shortestDistances[destination]
             };
+            console.log(`Ruta calculada hacia ${destination}: siguiente salto ${routingTable[destination].nextHop}, costo ${routingTable[destination].cost}`);
         }
     }
     return routingTable;
@@ -55,6 +58,7 @@ function determineNextHop(previousNodes, destinationNode, sourceNode) {
     while (previousNodes[nextHopNode] && previousNodes[nextHopNode] !== sourceNode) {
         nextHopNode = previousNodes[nextHopNode];
     }
+    console.log(`Determinando siguiente salto para ${destinationNode}: siguiente salto es ${nextHopNode}`);
     return nextHopNode;
 }
 
