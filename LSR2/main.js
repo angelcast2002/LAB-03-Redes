@@ -1,6 +1,6 @@
 const fs = require('fs');
 const readline = require('readline');
-const { connectToXmppServer, routingTableReady, routingTable } = require('./client');  // Importar routingTable
+const { connectToXmppServer, routingTableReady, getRoutingTable } = require('./client');  // Importar getRoutingTable
 const { xml } = require('@xmpp/client');  // Importación necesaria para enviar mensajes
 const rl = readline.createInterface({
     input: process.stdin,
@@ -23,6 +23,7 @@ const loadJSONFromFile = (filename) => {
 };
 
 const sendMessageBasedOnRoutingTable = (xmppClient, destinationNode, message) => {
+    const routingTable = getRoutingTable();  // Obtener la tabla de enrutamiento actualizada
     const nextHop = routingTable[destinationNode];
     if (nextHop) {
         xmppClient.send(xml('message', { to: nextHop.nextHop },
@@ -68,15 +69,11 @@ const main = async () => {
     console.log('Cliente XMPP conectado:', xmppClient.jid);
 
     // Esperar a que se actualice la tabla de enrutamiento usando Promesas
-    //await routingTableReady;
-
-    await routingTable;
+    await routingTableReady;
 
     console.log('Verificando la tabla de enrutamiento...');
-
-    console.log('Tabla de enrutamiento en main:', routingTable);
-
-    if (routingTable && Object.keys(routingTable).length > 0) {
+    const routingTable = getRoutingTable();  // Obtener la tabla de enrutamiento actualizada
+    if (Object.keys(routingTable).length > 0) {
         console.log('Tabla de enrutamiento calculada:', routingTable);
 
         // Enviar un mensaje de prueba a un nodo de destino basado en la tabla de enrutamiento

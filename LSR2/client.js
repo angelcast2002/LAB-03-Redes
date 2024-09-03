@@ -59,10 +59,10 @@ const updateRoutingTable = async () => {
 
     console.log('Grafo completo para Dijkstra:', fullGraph);
     routingTable = await calculateShortestPaths(fullGraph, currentNodeId);
-    console.log('Tabla ->', routingTable);
+    console.log('Tabla de enrutamiento actualizada:', routingTable);
 
     // Resolver la promesa para indicar que la tabla de enrutamiento está lista
-    //routingTableReadyResolver();
+    routingTableReadyResolver();
 };
 
 /**
@@ -141,7 +141,6 @@ const handleIncomingMessage = (stanza) => {
                     xml('body', {}, 'Echo response from ' + currentNodeId)
                 )
             );
-            updateRoutingTable();
         } else if (messageType === 'echo-response') {
             // Calcular RTT basado en el tiempo de envío original
             const originalSendTime = echoMessageTimestamps[fromNodeJid];
@@ -163,4 +162,7 @@ const handleIncomingMessage = (stanza) => {
     }
 };
 
-module.exports = { connectToXmppServer, handleIncomingMessage, routingTableReady, routingTable };
+// Nueva función para obtener la tabla de enrutamiento actual
+const getRoutingTable = () => routingTable;
+
+module.exports = { connectToXmppServer, handleIncomingMessage, routingTableReady, getRoutingTable };
