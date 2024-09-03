@@ -95,7 +95,7 @@ const handleIncomingMessage = (stanza) => {
                 console.log(`RTT a ${fromNodeJid}: ${roundTripTime} ms`);
                 delete echoMessageTimestamps[fromNodeJid];
                 
-                // Almacenar el RTT en la tabla de tiempos conocidos
+                // Asegurarse de que el formato de roundTripTimesTable sea correcto
                 if (!roundTripTimesTable[currentNodeId]) {
                     roundTripTimesTable[currentNodeId] = {};
                 }
@@ -103,6 +103,8 @@ const handleIncomingMessage = (stanza) => {
 
                 // Después de actualizar RTT, actualiza la tabla de enrutamiento
                 updateRoutingTable();
+                console.log('Grafo de red actualizado:', roundTripTimesTable);
+
             }
         }
     }
