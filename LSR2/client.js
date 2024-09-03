@@ -6,10 +6,51 @@ let echoMessageTimestamps = {};  // Marca de tiempo de cada mensaje echo enviado
 let roundTripTimesTable = {};  // Tiempos de ida y vuelta conocidos (RTT)
 let routingTable = {};  // Tabla de enrutamiento
 let currentNodeId;  // Almacenar el ID del nodo actual
+let nodeMapping;
+let networkTopology;
 
-// Función para actualizar la tabla de enrutamiento usando Dijkstra
+/**
+ * Construye un grafo completo usando la topología conocida y los RTT medidos.
+ * @param {Object} nodeMapping - Mapeo de nombres de nodos a direcciones XMPP.
+ * @param {Object} networkTopology - Topología de la red.
+ * @returns {Object} Grafo completo de la red.
+ */
+const buildFullGraph = (nodeMapping, networkTopology) => {
+    const fullGraph = {};
+
+    for (const node in nodeMapping['config']) {
+        if (!fullGraph[node]) {
+            fullGraph[node] = {};
+        }
+
+        // Agregar conexiones basadas en la topología conocida
+        for (const neighbor of networkTopology['config'][node]) {
+            fullGraph[node][nodeMapping['config'][neighbor]] = 1;  // Simular un peso de 1 para las conexiones
+        }
+    }
+
+    return fullGraph;
+};
+
+/**
+ * Actualiza la tabla de enrutamiento usando el algoritmo de Dijkstra.
+ */
 const updateRoutingTable = async () => {
-    routingTable = await calculateShortestPaths(roundTripTimesTable, currentNodeId);
+    const fullGraph = buildFullGraph(nodeMapping, networkTopology);
+    
+    // Luego mezcla esta información con el RTT real
+    for (const node in roundTripTimesTable) {
+        if (!fullGraph[node]) {
+            fullGraph[node] = {};
+        }
+
+        for (const neighbor in roundTripTimesTable[node]) {
+            fullGraph[node][neighbor] = roundTripTimesTable[node][neighbor];
+        }
+    }
+
+    console.log('Grafo completo para Dijkstra:', fullGraph);
+    routingTable = await calculateShortestPaths(fullGraph, currentNodeId);
     console.log('Tabla de enrutamiento actualizada:', routingTable);
 };
 
@@ -17,13 +58,15 @@ const updateRoutingTable = async () => {
  * Inicia sesión en el servidor XMPP y configura el cliente.
  * @param {string} username - Nombre de usuario para el cliente XMPP.
  * @param {string} password - Contraseña para el cliente XMPP.
- * @param {Object} nodeMapping - Mapeo de nombres de nodos a direcciones XMPP.
- * @param {Object} networkTopology - Información de la topología de la red.
+ * @param {Object} nodeMappingParam - Mapeo de nombres de nodos a direcciones XMPP.
+ * @param {Object} networkTopologyParam - Información de la topología de la red.
  * @param {string} currentNode - Identificador del nodo actual.
  * @returns {Object} El cliente XMPP inicializado.
  */
-const connectToXmppServer = async (username, password, nodeMapping, networkTopology, currentNode) => {
+const connectToXmppServer = async (username, password, nodeMappingParam, networkTopologyParam, currentNode) => {
     currentNodeId = currentNode;  // Asignar el nodo actual a la variable global
+    nodeMapping = nodeMappingParam;
+    networkTopology = networkTopologyParam;
 
     xmppConnection = client({
         service: 'ws://alumchat.lol:7070/ws/',
@@ -66,7 +109,7 @@ const connectToXmppServer = async (username, password, nodeMapping, networkTopol
     await xmppConnection.start().catch(console.error);
 
     return xmppConnection;
-}
+};
 
 /**
  * Maneja los mensajes entrantes y responde a los mensajes de eco.
@@ -103,8 +146,7 @@ const handleIncomingMessage = (stanza) => {
 
                 // Después de actualizar RTT, actualiza la tabla de enrutamiento
                 updateRoutingTable();
-                console.log('Grafo de red actualizado:', roundTripTimesTable);
-
+                console.log('Tabla de enrutamiento actualizada:', routingTable);
             }
         }
     }
