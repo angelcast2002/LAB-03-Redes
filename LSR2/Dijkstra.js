@@ -30,11 +30,11 @@ const calculateShortestPaths = async (networkGraph, sourceNode) => {
         // Actualizar distancias a los nodos vecinos
         for (const neighbor in networkGraph[closestUnvisitedNode]) {
             const newDistance = shortestDistances[closestUnvisitedNode] + networkGraph[closestUnvisitedNode][neighbor];
-            console.log(`Verificando nodo ${neighbor} desde ${closestUnvisitedNode}: distancia actual ${shortestDistances[neighbor]}, nueva distancia ${newDistance}`);
+            //console.log(`Verificando nodo ${neighbor} desde ${closestUnvisitedNode}: distancia actual ${shortestDistances[neighbor]}, nueva distancia ${newDistance}`);
             if (newDistance < shortestDistances[neighbor]) {
                 shortestDistances[neighbor] = newDistance;
                 previousNodes[neighbor] = closestUnvisitedNode;
-                console.log(`Actualizando nodo ${neighbor}: distancia más corta ahora es ${newDistance} a través de ${closestUnvisitedNode}`);
+                //console.log(`Actualizando nodo ${neighbor}: distancia más corta ahora es ${newDistance} a través de ${closestUnvisitedNode}`);
             }
         }
     }
