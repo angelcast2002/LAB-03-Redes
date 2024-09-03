@@ -1,6 +1,7 @@
 // Variables globales para manejar los tiempos de eco y RTT
 let echoMessageTimestamps = {};  // Marca de tiempo de cada mensaje echo enviado
 let roundTripTimesTable = {};  // Tiempos de ida y vuelta conocidos (RTT)
+let routingTable = {};  // Tabla de enrutamiento
 
 const fs = require('fs');
 const readline = require('readline');
@@ -25,23 +26,36 @@ const loadJSONFromFile = (filename) => {
     }
 };
 
+const sendMessageBasedOnRoutingTable = (xmppClient, destinationNode, message) => {
+    const nextHop = routingTable[destinationNode];
+    if (nextHop) {
+        xmppClient.send(xml('message', { to: nextHop.nextHop },
+            xml('type', {}, 'chat'),
+            xml('body', {}, message)
+        ));
+        console.log(`Mensaje enviado a ${destinationNode} a través de ${nextHop.nextHop}`);
+    } else {
+        console.error(`No se encontró ruta hacia ${destinationNode}`);
+    }
+};
+
 const main = async () => {
     const nodeMapping = loadJSONFromFile('./names.txt');
     const networkTopology = loadJSONFromFile('./topo.txt');
 
     if (!nodeMapping || !networkTopology) {
-        console.error("Error loading JSON files.");
+        console.error("Error al cargar los archivos JSON.");
         return;
     }
 
-    const currentNode = await new Promise((resolve) => rl.question("Input the node to use in the topology: ", resolve));
-    const password = await new Promise((resolve) => rl.question("Input user password: ", resolve));
+    const currentNode = await new Promise((resolve) => rl.question("Ingrese el nodo a utilizar en la topología: ", resolve));
+    const password = await new Promise((resolve) => rl.question("Ingrese la contraseña del usuario: ", resolve));
 
-    console.log('nodeMapping:', nodeMapping);
-    console.log('currentNode:', currentNode);
+    console.log('Mapeo de Nodos:', nodeMapping);
+    console.log('Nodo Actual:', currentNode);
 
     if (!nodeMapping['config'] || !nodeMapping['config'][currentNode]) {
-        console.error(`Node ${currentNode} not found in nodeMapping['config']`);
+        console.error(`El nodo ${currentNode} no se encuentra en nodeMapping['config']`);
         rl.close();
         return;
     }
@@ -57,7 +71,15 @@ const main = async () => {
 
     console.log('Cliente XMPP conectado:', xmppClient.jid);
 
-    // Puedes añadir aquí más lógica para enviar mensajes de prueba, etc.
+    // Esperar a que se actualice la tabla de enrutamiento
+    setTimeout(() => {
+        console.log('Tabla de enrutamiento calculada:', routingTable);
+
+        // Enviar un mensaje de prueba a un nodo de destino basado en la tabla de enrutamiento
+        const testDestination = 'B';  // Por ejemplo, enviar un mensaje al nodo B
+        const testMessage = 'Hola desde ' + currentNode;
+        sendMessageBasedOnRoutingTable(xmppClient, nodeMapping['config'][testDestination], testMessage);
+    }, 5000);  // Espera 5 segundos para asegurarte de que la tabla de enrutamiento se haya calculado
 
     // Cerrar la interfaz readline
     rl.close();

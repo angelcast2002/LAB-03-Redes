@@ -1,9 +1,17 @@
 const { client, xml } = require('@xmpp/client');
+const { calculateShortestPaths } = require('./Dijkstra');  // Importar la función desde Dijkstra.js
 
 let xmppConnection;
 let echoMessageTimestamps = {};  // Marca de tiempo de cada mensaje echo enviado
 let roundTripTimesTable = {};  // Tiempos de ida y vuelta conocidos (RTT)
+let routingTable = {};  // Tabla de enrutamiento
 let currentNodeId;  // Almacenar el ID del nodo actual
+
+// Función para actualizar la tabla de enrutamiento usando Dijkstra
+const updateRoutingTable = async () => {
+    routingTable = await calculateShortestPaths(roundTripTimesTable, currentNodeId);
+    console.log('Tabla de enrutamiento actualizada:', routingTable);
+};
 
 /**
  * Inicia sesión en el servidor XMPP y configura el cliente.
@@ -92,6 +100,9 @@ const handleIncomingMessage = (stanza) => {
                     roundTripTimesTable[currentNodeId] = {};
                 }
                 roundTripTimesTable[currentNodeId][fromNodeJid] = roundTripTime;
+
+                // Después de actualizar RTT, actualiza la tabla de enrutamiento
+                updateRoutingTable();
             }
         }
     }
