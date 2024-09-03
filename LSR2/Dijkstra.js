@@ -1,9 +1,3 @@
-/**
- * Implementación del algoritmo de Dijkstra para calcular las rutas más cortas desde un nodo fuente a todos los demás nodos en la red.
- * @param {Object} networkGraph - Grafo de la red representado como una tabla de adyacencia con tiempos de ida y vuelta (RTT).
- * @param {string} sourceNode - Nodo fuente desde el cual se calcularán las rutas más cortas.
- * @returns {Object} routingTable - Tabla de enrutamiento con el siguiente salto y el costo hacia cada nodo de destino.
- */
 const calculateShortestPaths = async (networkGraph, sourceNode) => {
     const shortestDistances = {};  // Almacena las distancias más cortas conocidas a cada nodo
     const previousNodes = {};  // Almacena el nodo previo en la ruta más corta
@@ -26,6 +20,10 @@ const calculateShortestPaths = async (networkGraph, sourceNode) => {
             }
         }
 
+        if (closestUnvisitedNode === null || shortestDistances[closestUnvisitedNode] === Infinity) {
+            break;  // No hay más nodos alcanzables
+        }
+
         // Remover el nodo más cercano de los nodos no visitados
         unvisitedNodes.delete(closestUnvisitedNode);
 
@@ -42,7 +40,7 @@ const calculateShortestPaths = async (networkGraph, sourceNode) => {
     // Construir la tabla de enrutamiento basada en las distancias calculadas
     const routingTable = {};
     for (const destination in shortestDistances) {
-        if (destination !== sourceNode) {
+        if (destination !== sourceNode && shortestDistances[destination] !== Infinity) {
             routingTable[destination] = {
                 nextHop: determineNextHop(previousNodes, destination, sourceNode),
                 cost: shortestDistances[destination]
@@ -52,13 +50,6 @@ const calculateShortestPaths = async (networkGraph, sourceNode) => {
     return routingTable;
 };
 
-/**
- * Determina el siguiente salto hacia el destino en la ruta más corta.
- * @param {Object} previousNodes - Mapa de nodos previos en la ruta más corta.
- * @param {string} destinationNode - Nodo de destino.
- * @param {string} sourceNode - Nodo fuente.
- * @returns {string} nextHopNode - Nodo del siguiente salto hacia el destino.
- */
 function determineNextHop(previousNodes, destinationNode, sourceNode) {
     let nextHopNode = destinationNode;
     while (previousNodes[nextHopNode] && previousNodes[nextHopNode] !== sourceNode) {
