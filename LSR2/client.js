@@ -3,6 +3,7 @@ const { client, xml } = require('@xmpp/client');
 let xmppConnection;
 let echoMessageTimestamps = {};  // Marca de tiempo de cada mensaje echo enviado
 let roundTripTimesTable = {};  // Tiempos de ida y vuelta conocidos (RTT)
+let currentNodeId;  // Almacenar el ID del nodo actual
 
 /**
  * Inicia sesión en el servidor XMPP y configura el cliente.
@@ -14,6 +15,8 @@ let roundTripTimesTable = {};  // Tiempos de ida y vuelta conocidos (RTT)
  * @returns {Object} El cliente XMPP inicializado.
  */
 const connectToXmppServer = async (username, password, nodeMapping, networkTopology, currentNode) => {
+    currentNodeId = currentNode;  // Asignar el nodo actual a la variable global
+
     xmppConnection = client({
         service: 'ws://alumchat.lol:7070/ws/',
         domain: 'alumchat.lol',
@@ -52,12 +55,10 @@ const connectToXmppServer = async (username, password, nodeMapping, networkTopol
         console.log('Desconectado del servidor XMPP');
     });
 
-    // Iniciar el cliente XMPP
     await xmppConnection.start().catch(console.error);
 
     return xmppConnection;
 }
-
 
 /**
  * Maneja los mensajes entrantes y responde a los mensajes de eco.
@@ -75,7 +76,7 @@ const handleIncomingMessage = (stanza) => {
             xmppConnection.send(
                 xml('message', { to: fromNodeJid },
                     xml('type', {}, 'echo-response'),
-                    xml('body', {}, 'Echo response from ' + fromNodeJid)
+                    xml('body', {}, 'Echo response from ' + currentNodeId)
                 )
             );
         } else if (messageType === 'echo-response') {
@@ -87,10 +88,10 @@ const handleIncomingMessage = (stanza) => {
                 delete echoMessageTimestamps[fromNodeJid];
                 
                 // Almacenar el RTT en la tabla de tiempos conocidos
-                if (!roundTripTimesTable[currentNode]) {
-                    roundTripTimesTable[currentNode] = {};
+                if (!roundTripTimesTable[currentNodeId]) {
+                    roundTripTimesTable[currentNodeId] = {};
                 }
-                roundTripTimesTable[currentNode][fromNodeJid] = roundTripTime;
+                roundTripTimesTable[currentNodeId][fromNodeJid] = roundTripTime;
             }
         }
     }
