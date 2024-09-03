@@ -29,22 +29,20 @@ const { login, sendMessage, resendEchoes, toggleLogs, dijkstra, construirTablaRu
     console.log("Siguiente nodo hacia 'D':", siguienteNodo);
 
     // Configurar credenciales y detalles de conexión
-    const username = 'azu21242';  // Reemplaza con tu nombre de usuario XMPP
-    const password = 'tuContraseña';  // Reemplaza con tu contraseña XMPP
+    const username = 'azu21242@alumchat.lol';  // Reemplaza con tu nombre de usuario XMPP
+    const password = 'azu21242';  // Reemplaza con tu contraseña XMPP
     const names = {
         'config': {
-            'A': 'userA@alumchat.lol',
-            'B': 'userB@alumchat.lol',
-            'C': 'userC@alumchat.lol',
-            'D': 'userD@alumchat.lol',
+            'A': 'azu21242@alumchat.lol',
+            'B': 'mor21146@alumchat.lol',
+            'C': 'cas@alumchat.lol'
         }
     };
     const topo = {
         'config': {
             'A': ['B', 'C'],
-            'B': ['A', 'C', 'D'],
-            'C': ['A', 'B', 'D'],
-            'D': ['B', 'C'],
+            'B': ['A', 'C'],
+            'C': ['A', 'B'],
         }
     };
 
@@ -53,7 +51,7 @@ const { login, sendMessage, resendEchoes, toggleLogs, dijkstra, construirTablaRu
 
     // Probar el envío de un mensaje
     console.log("\nEnviando un mensaje de prueba:");
-    sendMessage(client, 'D', 'Este es un mensaje de prueba desde A hacia D.');
+    sendMessage(client, 'C', 'Este es un mensaje de prueba desde A hacia C.');
 
     // Alternar logs
     toggleLogs(true);
