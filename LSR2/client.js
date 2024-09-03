@@ -158,6 +158,10 @@ const handleIncomingMessage = (stanza) => {
                 // Después de actualizar RTT, actualiza la tabla de enrutamiento
                 updateRoutingTable();
             }
+        } else if (messageType === 'chat') {
+            // Imprimir el mensaje de chat recibido
+            const messageBody = stanza.getChildText('body');
+            console.log(`Mensaje recibido de ${fromNodeJid}: ${messageBody}`);
         }
     }
 };
