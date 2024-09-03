@@ -18,19 +18,22 @@ let networkTopology;
 const buildFullGraph = (nodeMapping, networkTopology) => {
     const fullGraph = {};
 
-    for (const node in nodeMapping['config']) {
+    for (const nodeKey in nodeMapping['config']) {
+        const node = nodeMapping['config'][nodeKey]; // Usar la dirección XMPP completa como clave
+
         if (!fullGraph[node]) {
             fullGraph[node] = {};
         }
 
         // Agregar conexiones basadas en la topología conocida
-        for (const neighbor of networkTopology['config'][node]) {
+        for (const neighbor of networkTopology['config'][nodeKey]) {
             fullGraph[node][nodeMapping['config'][neighbor]] = 1;  // Simular un peso de 1 para las conexiones
         }
     }
 
     return fullGraph;
 };
+
 
 /**
  * Actualiza la tabla de enrutamiento usando el algoritmo de Dijkstra.
