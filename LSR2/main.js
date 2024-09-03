@@ -39,6 +39,7 @@ const sendMessageBasedOnRoutingTable = (xmppClient, destinationNode, message) =>
     }
 };
 
+
 const main = async () => {
     const nodeMapping = loadJSONFromFile('./names.txt');
     const networkTopology = loadJSONFromFile('./topo.txt');
@@ -76,13 +77,17 @@ const main = async () => {
         console.log('Tabla de enrutamiento calculada:', routingTable);
 
         // Enviar un mensaje de prueba a un nodo de destino basado en la tabla de enrutamiento
-        const testDestination = 'B';  // Por ejemplo, enviar un mensaje al nodo B
+        const testDestination = 'mor21146@alumchat.lol';  // Ahora utilizando la dirección XMPP completa
         const testMessage = 'Hola desde ' + currentNode;
-        sendMessageBasedOnRoutingTable(xmppClient, nodeMapping['config'][testDestination], testMessage);
-    }, 5000);  // Espera 5 segundos para asegurarte de que la tabla de enrutamiento se haya calculado
+        sendMessageBasedOnRoutingTable(xmppClient, testDestination, testMessage);
+    }, 10000);  // Ajusta este tiempo según sea necesario para asegurarte de que la tabla de enrutamiento esté lista
 
     // Cerrar la interfaz readline
     rl.close();
 };
+
+main();
+
+
 
 main();
