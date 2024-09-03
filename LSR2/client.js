@@ -1,5 +1,5 @@
 const { client, xml } = require('@xmpp/client');
-const { calculateShortestPaths } = require('./Dijkstra');  // Importar la función desde Dijkstra.js
+const { calculateShortestPaths } = require('./dijkstra');  // Importar la función desde Dijkstra.js
 
 let xmppConnection;
 let echoMessageTimestamps = {};  // Marca de tiempo de cada mensaje echo enviado
