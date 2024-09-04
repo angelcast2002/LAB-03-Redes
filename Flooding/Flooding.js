@@ -37,7 +37,7 @@ const sendMessage = async (to, message) => {
     { to, type: "chat" },
     xml("body", {}, JSON.stringify(message))
   );
-  // console.log("Sending message:", xmlMessage);
+  console.log("Sending message:", xmlMessage);
   await xmppClient.send(xmlMessage);
 };
 
@@ -109,21 +109,34 @@ const logOut = async () => {
   }
 };
 
-// Punto de entrada
+const readline = require('readline');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+const askQuestion = (query) => {
+  return new Promise(resolve => rl.question(query, resolve));
+};
+
 const main = async () => {
-  const Username = "grupo-1"; // Cambia por tu nombre de usuario
-  const password = "1234"; // Cambia por tu contraseña
+  const Username = await askQuestion("Introduce tu nombre de usuario: ");
+  const password = await askQuestion("Introduce tu contraseña: ");
+  const to = await askQuestion("Introduce el destinatario: ");
+  const payload = await askQuestion("Introduce el mensaje: ");
 
   await connect(Username, password);
   const message = {
     type: "message",
     from: Username + "@alumchat.lol",
-    to: "grupo-4@alumchat.lol",
+    to: to,
     hops: 0,
     headers: [],
-    payload: "Este mensaje es para Mora",
+    payload: payload,
   };
   await floodMessage(message);
+  rl.close();
   // await logOut();
 };
 
