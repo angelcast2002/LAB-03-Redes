@@ -65,33 +65,6 @@ const sendMessageBasedOnRoutingTable = (xmppClient, currentNode, destinationNode
     }
 };
 
-const menu = (xmppClient, currentNode) => {
-    rl.question(`
-Seleccione una opción:
-1. Enviar un mensaje
-2. Salir
-Opción: `, async (option) => {
-        switch (option.trim()) {
-            case '1':
-                const destinationNode = await new Promise((resolve) => rl.question("Ingrese la dirección del nodo destino (ej. mor21146@alumchat.lol): ", resolve));
-                const messageToSend = await new Promise((resolve) => rl.question("Ingrese el mensaje a enviar: ", resolve));
-                sendMessageBasedOnRoutingTable(xmppClient, currentNode, destinationNode, messageToSend);
-                menu(xmppClient, currentNode);  // Volver al menú después de enviar el mensaje
-                break;
-            case '2':
-                console.log('Saliendo...');
-                rl.close();
-                xmppClient.stop();
-                process.exit(0);  // Terminar el proceso
-                break;
-            default:
-                console.log('Opción no válida. Intente de nuevo.');
-                menu(xmppClient, currentNode);
-                break;
-        }
-    });
-};
-
 const main = async () => {
     const nodeMapping = loadJSONFromFile('./names.txt');
     const networkTopology = loadJSONFromFile('./topo.txt');
@@ -131,12 +104,19 @@ const main = async () => {
     const routingTable = getRoutingTable();
     if (Object.keys(routingTable).length > 0) {
         console.log('Tabla de enrutamiento calculada:', routingTable);
-        menu(xmppClient, nodeMapping['config'][currentNode]);  // Mostrar el menú después de conectarse
+
+        // Solicitar el nodo de destino y el mensaje
+        const destinationNode = await new Promise((resolve) => rl.question("Ingrese la dirección del nodo destino (ej. mor21146@alumchat.lol): ", resolve));
+        const messageToSend = await new Promise((resolve) => rl.question("Ingrese el mensaje a enviar: ", resolve));
+
+        // Enviar el mensaje al nodo de destino basado en la tabla de enrutamiento
+        sendMessageBasedOnRoutingTable(xmppClient, nodeMapping['config'][currentNode], destinationNode, messageToSend);
     } else {
         console.error("La tabla de enrutamiento no se ha calculado correctamente.");
-        rl.close();
-        xmppClient.stop();
     }
+
+    // Cerrar la interfaz readline
+    rl.close();
 };
 
 main();
