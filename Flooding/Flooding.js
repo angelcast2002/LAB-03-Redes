@@ -6,9 +6,11 @@ let visitedMessages = new Set();
 const getContacts = async () => {
   // Aquí deberías implementar la lógica para obtener los contactos de un nodo
   return [
-    "mor21146@alumchat.lol",
-    "contact2@alumchat.lol",
-    "contact3@alumchat.lol",
+    "grupo-3@alumchat.lol",
+    "grupo-2@alumchat.lol",
+    "grupo-6@alumchat.lol",
+    "grupo-4@alumchat.lol",
+    "grupo-5@alumchat.lol"
   ];
 };
 
@@ -109,14 +111,14 @@ const logOut = async () => {
 
 // Punto de entrada
 const main = async () => {
-  const Username = "cas21700"; // Cambia por tu nombre de usuario
-  const password = "18sep2002"; // Cambia por tu contraseña
+  const Username = "grupo-1"; // Cambia por tu nombre de usuario
+  const password = "1234"; // Cambia por tu contraseña
 
   await connect(Username, password);
   const message = {
     type: "message",
     from: Username + "@alumchat.lol",
-    to: "mor21146@alumchat.lol",
+    to: "grupo-4@alumchat.lol",
     hops: 0,
     headers: [],
     payload: "Este mensaje es para Mora",
