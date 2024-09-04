@@ -15,6 +15,10 @@ const calculateShortestPaths = (graph, startNode) => {
             distances[node] < distances[closest] ? node : closest
         );
 
+        if (distances[closestNode] === Infinity) {
+            break; // No hay más nodos alcanzables
+        }
+
         remainingNodes.delete(closestNode);
 
         for (const neighbor in graph[closestNode]) {
@@ -31,15 +35,19 @@ const calculateShortestPaths = (graph, startNode) => {
     for (const node in distances) {
         if (node !== startNode) {
             let nextHop = node;
+
+            // Seguir el camino hacia atrás desde el nodo destino para encontrar el siguiente salto
             while (previousNodes[nextHop] !== startNode && previousNodes[nextHop] !== null) {
                 nextHop = previousNodes[nextHop];
             }
 
-            routingTable[node] = { nextHop, cost: distances[node] };
+            if (distances[node] < Infinity) {
+                routingTable[node] = { nextHop, cost: distances[node] };
+            }
         }
     }
 
     return routingTable;
 };
 
-module.exports = { calculateShortestPaths };
+module.exports =  {calculateShortestPaths};

@@ -35,18 +35,17 @@ const printMessageRoute = (routingTable, currentNode, destinationNode) => {
     while (nextHop && nextHop !== destinationNode) {
         route.push(nextHop);
         nextHop = routingTable[nextHop]?.nextHop;
+
+        if (!nextHop) {
+            console.error(`Error: No se pudo determinar la ruta completa hacia ${destinationNode}.`);
+            return;
+        }
     }
 
-    if (nextHop) {
-        route.push(destinationNode);
-    } else if (nextHop === null) {
-        route.push(destinationNode);
-    } else {
-        console.error(`Error: No se pudo determinar la ruta completa hacia ${destinationNode}.`);
-    }
-
+    route.push(destinationNode);
     console.log(`Ruta para enviar el mensaje desde ${currentNode} hasta ${destinationNode}: ${route.join(' -> ')}`);
 };
+
 
 const sendMessageBasedOnRoutingTable = (xmppClient, currentNode, destinationNode, message) => {
     const routingTable = getRoutingTable();
