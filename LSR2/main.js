@@ -76,7 +76,6 @@ Opción: `, async (option) => {
                 const destinationNode = await new Promise((resolve) => rl.question("Ingrese la dirección del nodo destino (ej. mor21146@alumchat.lol): ", resolve));
                 const messageToSend = await new Promise((resolve) => rl.question("Ingrese el mensaje a enviar: ", resolve));
                 sendMessageBasedOnRoutingTable(xmppClient, currentNode, destinationNode, messageToSend);
-                menu(xmppClient, currentNode);  // Volver al menú después de enviar el mensaje
                 break;
             case '2':
                 console.log('Saliendo...');
