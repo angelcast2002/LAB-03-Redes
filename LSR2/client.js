@@ -24,17 +24,19 @@ const routingTableReady = new Promise((resolve) => {
 const buildFullGraph = (nodeMapping, networkTopology) => {
     const fullGraph = {};
 
+    // Inicializar el grafo con todos los nodos, aunque no tengan conexiones
     for (const nodeKey in nodeMapping['config']) {
         const node = nodeMapping['config'][nodeKey];
+        fullGraph[node] = {};
+    }
 
-        if (!fullGraph[node]) {
-            fullGraph[node] = {};
-        }
-
-        // Agregar conexiones basadas en la topología conocida
-        for (const neighbor of networkTopology['config'][nodeKey]) {
-            fullGraph[node][nodeMapping['config'][neighbor]] = 1;  // Simular un peso de 1 para las conexiones
-        }
+    // Agregar conexiones basadas en la topología conocida
+    for (const nodeKey in networkTopology['config']) {
+        const node = nodeMapping['config'][nodeKey];
+        networkTopology['config'][nodeKey].forEach(neighborKey => {
+            const neighbor = nodeMapping['config'][neighborKey];
+            fullGraph[node][neighbor] = 1;  // Simular un peso de 1 para las conexiones
+        });
     }
 
     return fullGraph;
@@ -46,7 +48,7 @@ const buildFullGraph = (nodeMapping, networkTopology) => {
 const updateRoutingTable = async () => {
     const fullGraph = buildFullGraph(nodeMapping, networkTopology);
     
-    // Luego mezcla esta información con el RTT real
+    // Mezclar esta información con el RTT real
     for (const node in roundTripTimesTable) {
         if (!fullGraph[node]) {
             fullGraph[node] = {};
@@ -92,7 +94,8 @@ const connectToXmppServer = async (username, password, nodeMappingParam, network
 
         // Enviar un mensaje de echo inicial a los nodos vecinos
         setTimeout(() => {
-            networkTopology['config'][currentNode].forEach(neighbor => {
+            const neighbors = networkTopology['config'][currentNode] || [];
+            neighbors.forEach(neighbor => {
                 const currentTime = Date.now();
                 echoMessageTimestamps[nodeMapping['config'][neighbor]] = currentTime;
 
